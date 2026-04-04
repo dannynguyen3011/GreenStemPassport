@@ -120,6 +120,12 @@ export default function LandingPage() {
             >
               Đăng nhập
             </Link>
+            <Link
+              href="/demo"
+              className="inline-flex items-center justify-center gap-2 border border-dashed border-gray-300 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-7 py-3.5 rounded-xl font-medium text-base transition-colors"
+            >
+              Xem Demo
+            </Link>
           </div>
           <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
             {[{ value: '6', label: 'Trường Big 6' }, { value: '10', label: 'Portfolio Slots' }, { value: '24/7', label: 'RAG Chatbot' }].map(({ value, label }) => (

@@ -64,7 +64,7 @@ export default function OpportunitiesPage() {
       <Topbar title="Kho Co Hoi STEM" />
 
       <main className="flex-1 p-4 sm:p-6 space-y-5">
-        <section className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
+        <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div>
               <h2 className="text-base font-semibold text-gray-800">Danh sach co hoi theo nganh muc tieu</h2>
@@ -171,7 +171,7 @@ export default function OpportunitiesPage() {
             return (
               <article
                 key={opportunity.opp_id}
-                className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-semibold text-gray-800 leading-5">{opportunity.name}</h3>

@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide browser-native password reveal (Edge, IE) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+/* Ensure select dropdowns always have readable text */
+select {
+  color: #111827; /* gray-900 */
+}
+.dark select {
+  color: #f9fafb; /* gray-50 */
+  background-color: #1f2937; /* gray-800 */
+}
+/* Native option elements inherit from select */
+select option {
+  color: #111827;
+  background-color: #ffffff;
+}
+.dark select option {
+  color: #f9fafb;
+  background-color: #1f2937;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

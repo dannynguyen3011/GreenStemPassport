@@ -100,7 +100,7 @@ function getCompassResult(
 }
 
 export default function CompassPage() {
-  const { profile, activities, updateProfile } = useProfileStore()
+  const { profile, activities } = useProfileStore()
   const slottedActivities = activities.filter((activity) => activity.slot_order !== null)
   const { total_ocs } = calculateOCS(activities, profile.target_major)
 
@@ -115,70 +115,33 @@ export default function CompassPage() {
       <Topbar title="Strategic Matching — Compass Engine" />
 
       <main className="flex-1 p-4 sm:p-6 space-y-6">
-        <section className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
-          <div>
-            <h2 className="text-base font-semibold text-gray-800">Nhập học lực hiện tại</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Hệ thống so sánh với ngưỡng Big 6 và trả về đèn tín hiệu + gap cụ thể.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <label className="space-y-1">
-              <span className="text-xs font-medium text-gray-600">GPA (0-10)</span>
-              <input
-                type="number"
-                min={0}
-                max={10}
-                step={0.1}
-                value={profile.gpa ?? ''}
-                onChange={(event) =>
-                  updateProfile({ gpa: event.target.value === '' ? null : Number(event.target.value) })
-                }
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
-              />
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-medium text-gray-600">SAT (400-1600)</span>
-              <input
-                type="number"
-                min={400}
-                max={1600}
-                step={10}
-                value={profile.sat_score ?? ''}
-                onChange={(event) =>
-                  updateProfile({ sat_score: event.target.value === '' ? null : Number(event.target.value) })
-                }
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
-              />
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-medium text-gray-600">IELTS (0-9)</span>
-              <input
-                type="number"
-                min={0}
-                max={9}
-                step={0.5}
-                value={profile.ielts_score ?? ''}
-                onChange={(event) =>
-                  updateProfile({ ielts_score: event.target.value === '' ? null : Number(event.target.value) })
-                }
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
-              />
-            </label>
-
-            <div className="rounded-md border border-green-100 bg-green-50 px-3 py-2">
-              <p className="text-xs text-green-700">OCS hiện tại</p>
-              <p className="text-2xl font-bold text-green-800">{total_ocs}</p>
+        {/* Read-only summary — edit via Cài đặt hồ sơ */}
+        <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base font-semibold text-gray-800 dark:text-white">Hồ sơ hiện tại</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Hệ thống so sánh với ngưỡng Big 6. Cập nhật điểm số tại{' '}
+                <a href="/profile" className="text-green-600 dark:text-green-400 underline">Cài đặt hồ sơ</a>.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { label: 'GPA', value: gpaInput > 0 ? gpaInput.toFixed(1) : '—' },
+                { label: 'SAT', value: satInput > 0 ? satInput : '—' },
+                { label: 'IELTS', value: ieltsInput > 0 ? ieltsInput.toFixed(1) : '—' },
+                { label: 'OCS', value: total_ocs, green: true },
+              ].map(({ label, value, green }) => (
+                <div key={label} className={`rounded-lg border px-4 py-2 text-center min-w-[70px] ${green ? 'border-green-200 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'}`}>
+                  <p className={`text-xs font-medium ${green ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>{label}</p>
+                  <p className={`text-xl font-bold ${green ? 'text-green-800 dark:text-green-300' : 'text-gray-800 dark:text-white'}`}>{value}</p>
+                </div>
+              ))}
             </div>
           </div>
-
           {warningUnrealistic && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              Mục tiêu chưa thực tế: GPA hiện tại đang thấp so với mức SAT kỳ vọng. Bạn vẫn có
-              thể tiếp tục, nhưng nên bổ sung lộ trình nâng GPA trước.
+            <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
+              Mục tiêu chưa thực tế: GPA hiện tại đang thấp so với mức SAT kỳ vọng.
             </div>
           )}
         </section>
@@ -197,23 +160,23 @@ export default function CompassPage() {
               result.light === 'safe'
                 ? {
                     dot: 'bg-green-500',
-                    text: 'text-green-700',
-                    badge: 'bg-green-100 text-green-700',
+                    text: 'text-green-700 dark:text-green-400',
+                    badge: 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300',
                     label: 'An toàn',
                     guidance: 'Hồ sơ vượt ngưỡng an toàn. Tự tin nộp.',
                   }
                 : result.light === 'try_harder'
                 ? {
                     dot: 'bg-yellow-400',
-                    text: 'text-yellow-700',
-                    badge: 'bg-yellow-100 text-yellow-700',
+                    text: 'text-yellow-700 dark:text-yellow-400',
+                    badge: 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300',
                     label: 'Cần cố gắng',
                     guidance: 'Hồ sơ tiềm năng, cần bổ sung một vài chỉ số.',
                   }
                 : {
                     dot: 'bg-red-500',
-                    text: 'text-red-700',
-                    badge: 'bg-red-100 text-red-700',
+                    text: 'text-red-700 dark:text-red-400',
+                    badge: 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300',
                     label: 'Cần điều chỉnh',
                     guidance: 'Hồ sơ chưa đạt ngưỡng tối thiểu của trường này.',
                   }
@@ -221,12 +184,12 @@ export default function CompassPage() {
             return (
               <article
                 key={school.school_id}
-                className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`h-3 w-3 rounded-full ${tone.dot}`} />
-                    <h3 className="font-semibold text-gray-800">{school.school_name}</h3>
+                    <h3 className="font-semibold text-gray-800 dark:text-white">{school.school_name}</h3>
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${tone.badge}`}>
                     {tone.label}
@@ -234,31 +197,30 @@ export default function CompassPage() {
                 </div>
 
                 <div className="flex items-end justify-between">
-                  <p className="text-sm text-gray-500">Mức độ phù hợp</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Mức độ phù hợp</p>
                   <p className={`text-3xl font-bold ${tone.text}`}>{result.matchPercentage}%</p>
                 </div>
 
-                <p className="text-sm text-gray-600">{tone.guidance}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{tone.guidance}</p>
 
-                <div className="text-xs text-gray-500 bg-gray-50 rounded-md p-2">
-                  Ưu tiên danh mục:
-                  {' '}
+                <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-md p-2">
+                  Ưu tiên danh mục:{' '}
                   {school.preferred_categories.map((cat) => CATEGORY_LABELS[cat]).join(', ')}
                 </div>
 
                 {result.gaps.length > 0 ? (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-gray-600 uppercase">Gap Analysis</p>
+                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Gap Analysis</p>
                     {result.gaps.map((gap) => (
-                      <div key={`${school.school_id}-${gap.field}`} className="rounded-md border border-gray-200 p-2.5">
-                        <p className="text-sm text-gray-700">{gap.message}</p>
-                        <p className="text-xs text-blue-700 mt-1">{gap.action}</p>
+                      <div key={`${school.school_id}-${gap.field}`} className="rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40 p-2.5">
+                        <p className="text-sm text-gray-700 dark:text-gray-200">{gap.message}</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{gap.action}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-md border border-green-200 bg-green-50 p-2.5">
-                    <p className="text-sm text-green-700">
+                  <div className="rounded-md border border-green-200 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10 p-2.5">
+                    <p className="text-sm text-green-700 dark:text-green-300">
                       Bạn đang đạt các ngưỡng chính của trường này.
                     </p>
                   </div>

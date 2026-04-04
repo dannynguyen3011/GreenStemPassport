@@ -15,6 +15,8 @@ interface ProfileStore {
   activitiesByUserId: Record<string, Activity[]>
   profile: UserProfile
   activities: Activity[]
+  /** Called after login — loads real DB data into the store */
+  setAuthenticatedUser: (profile: UserProfile, activities: Activity[]) => void
   setCurrentUser: (userId: string) => void
   createUser: (payload: {
     display_name: string
@@ -65,6 +67,15 @@ export const useProfileStore = create<ProfileStore>()(
       profilesById: initial.profilesById,
       activitiesByUserId: initial.activitiesByUserId,
       ...snapshotFor(DEFAULT_USER_ID, initial.profilesById, initial.activitiesByUserId),
+
+      setAuthenticatedUser: (userProfile, userActivities) =>
+        set((state) => ({
+          currentUserId: userProfile.user_id,
+          profilesById: { ...state.profilesById, [userProfile.user_id]: userProfile },
+          activitiesByUserId: { ...state.activitiesByUserId, [userProfile.user_id]: userActivities },
+          profile: userProfile,
+          activities: userActivities,
+        })),
 
       setCurrentUser: (userId) =>
         set((state) => {

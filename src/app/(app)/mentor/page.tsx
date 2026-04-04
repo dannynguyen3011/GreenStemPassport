@@ -52,7 +52,7 @@ export default function MentorPage() {
           </section>
         )}
 
-        <section className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
+        <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-4">
           <div>
             <h2 className="text-base font-semibold text-gray-800">Ket noi mentor phu hop</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -104,7 +104,7 @@ export default function MentorPage() {
           {mentors.map((mentor) => (
             <article
               key={mentor.mentor_id}
-              className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3"
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>

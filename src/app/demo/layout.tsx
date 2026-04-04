@@ -1,11 +1,10 @@
 import { Sidebar } from '@/components/shared/Sidebar'
-import { AuthDataLoader } from '@/components/shared/AuthDataLoader'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+// Demo layout — no AuthDataLoader, always uses local demo store data
+export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
       <Sidebar />
-      <AuthDataLoader />
       <div className="flex-1 flex flex-col overflow-hidden ml-60">
         {children}
       </div>

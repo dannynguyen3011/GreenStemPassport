@@ -157,8 +157,8 @@ export default function PortfolioPage() {
 
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">10 Slot Portfolio</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">10 Slot Portfolio</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {slottedActivities.length}/10 slot đã được lấp đầy
             </p>
           </div>
@@ -332,9 +332,9 @@ export default function PortfolioPage() {
               return (
                 <div
                   key={slot}
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 min-h-[120px] bg-gray-50 text-gray-400"
+                  className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-2 min-h-[120px] bg-gray-50 dark:bg-gray-800/50 text-gray-400 dark:text-gray-600"
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
                     <Plus className="w-4 h-4" />
                   </div>
                   <p className="text-sm">Slot {slot} — Chưa có hoạt động</p>
@@ -345,7 +345,7 @@ export default function PortfolioPage() {
             return (
               <div
                 key={slot}
-                className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
