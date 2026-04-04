@@ -78,6 +78,7 @@ export function Topbar({ title }: TopbarProps) {
                 <div className="space-y-1">
                   <label className="text-xs text-gray-600">Lớp</label>
                   <select
+                    title="Chọn khối lớp"
                     value={grade}
                     onChange={(e) => setGrade(Number(e.target.value) as 10 | 11 | 12)}
                     className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
@@ -90,6 +91,7 @@ export function Topbar({ title }: TopbarProps) {
                 <div className="space-y-1">
                   <label className="text-xs text-gray-600">Ngành mục tiêu</label>
                   <select
+                    title="Chọn ngành mục tiêu"
                     value={targetMajor}
                     onChange={(e) => setTargetMajor(e.target.value as 'cntt' | 'toan_thong_ke')}
                     className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"

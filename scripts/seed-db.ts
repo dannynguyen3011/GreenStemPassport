@@ -1,0 +1,72 @@
+/**
+ * Database seed script — populates Big 6 school personas and demo opportunities
+ * Run: npx tsx scripts/seed-db.ts
+ *
+ * Requires DATABASE_URL in .env.local
+ */
+import { config } from 'dotenv'
+config({ path: '.env.local' })
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import * as schema from '../src/db/schema'
+import { BIG6_SCHOOLS, DEMO_OPPORTUNITIES } from '../src/lib/constants'
+
+const client = postgres(process.env.DATABASE_URL!, { prepare: false })
+const db = drizzle(client, { schema })
+
+async function main() {
+  console.log('🌱 Seeding database...')
+
+  // ── School Personas ────────────────────────────────────────────────────────
+  console.log('  → Inserting Big 6 school personas...')
+  for (const school of BIG6_SCHOOLS) {
+    await db
+      .insert(schema.schoolPersonas)
+      .values({
+        school_id: school.school_id,
+        school_name: school.school_name,
+        short_name: school.short_name,
+        min_sat: school.min_sat,
+        min_gpa: school.min_gpa.toString(),
+        min_ielts: school.min_ielts.toString(),
+        has_interview: school.has_interview,
+        min_portfolio_activities: school.min_portfolio_activities,
+        preferred_categories: school.preferred_categories,
+        persona_description: school.persona_description,
+        source_doc: 'Đề án tuyển sinh 2026',
+        source_page: '—',
+        effective_year: 2026,
+      })
+      .onConflictDoNothing()
+  }
+  console.log(`  ✓ ${BIG6_SCHOOLS.length} schools seeded`)
+
+  // ── Demo Opportunities ─────────────────────────────────────────────────────
+  console.log('  → Inserting demo STEM opportunities...')
+  for (const opp of DEMO_OPPORTUNITIES) {
+    await db
+      .insert(schema.opportunities)
+      .values({
+        name: opp.name,
+        type: opp.type as schema.OpportunityRow['type'],
+        field_tags: opp.field_tags,
+        scope: opp.scope as schema.OpportunityRow['scope'],
+        is_online: opp.is_online,
+        is_free: opp.is_free,
+        deadline: new Date(opp.deadline),
+        source_url: opp.source_url,
+        description: opp.description,
+        admin_verified: opp.admin_verified,
+      })
+      .onConflictDoNothing()
+  }
+  console.log(`  ✓ ${DEMO_OPPORTUNITIES.length} opportunities seeded`)
+
+  console.log('✅ Database seeded successfully!')
+  await client.end()
+}
+
+main().catch((err) => {
+  console.error('❌ Seed failed:', err)
+  process.exit(1)
+})
