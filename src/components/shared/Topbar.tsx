@@ -1,25 +1,74 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useProfileStore } from '@/store/useProfileStore'
 import { calculateOCS } from '@/lib/ocs'
-import { Bell, ChevronDown, Plus, Users } from 'lucide-react'
+import { Bell, ChevronDown, Plus, Users, LogOut, Settings } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import { getSupabaseBrowser } from '@/lib/supabase-browser'
 
 interface TopbarProps {
   title: string
 }
 
 export function Topbar({ title }: TopbarProps) {
+  const router = useRouter()
   const { profile, activities, currentUserId, userOptions, setCurrentUser, createUser } = useProfileStore()
   const { total_ocs } = calculateOCS(activities, profile.target_major)
+
+  // Demo create-user dialog state
   const [open, setOpen] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [grade, setGrade] = useState<10 | 11 | 12>(10)
   const [schoolName, setSchoolName] = useState('')
   const [province, setProvince] = useState('')
   const [targetMajor, setTargetMajor] = useState<'cntt' | 'toan_thong_ke'>('cntt')
+
+  // Auth state
+  const [authUser, setAuthUser] = useState<{ name: string; email: string } | null>(null)
+  const [authChecked, setAuthChecked] = useState(false)
+
+  // Profile dropdown
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const supabase = getSupabaseBrowser()
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setAuthUser({
+            name: (session.user.user_metadata?.display_name as string) || session.user.email || '',
+            email: session.user.email || '',
+          })
+        }
+      } finally {
+        setAuthChecked(true)
+      }
+    }
+    check()
+  }, [])
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = getSupabaseBrowser()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const canCreate = displayName.trim().length >= 2 && schoolName.trim().length >= 2
 
@@ -40,106 +89,170 @@ export function Topbar({ title }: TopbarProps) {
     setOpen(false)
   }
 
+  const isAuth = authChecked && authUser !== null
+
   return (
-    <header className="h-14 border-b bg-white flex items-center justify-between px-3 sm:px-6 shrink-0 gap-2">
+    <header className="h-14 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center justify-between px-3 sm:px-6 shrink-0 gap-2 transition-colors">
+
+      {/* Left: title + demo controls */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <h1 className="text-base sm:text-lg font-semibold text-gray-800 truncate">{title}</h1>
-        <label className="flex items-center gap-2 text-xs text-gray-500 shrink-0">
-          <Users className="w-4 h-4 text-gray-400 hidden sm:block" />
-          <span className="sr-only">Chọn hồ sơ demo</span>
-          <select
-            value={currentUserId}
-            onChange={(e) => setCurrentUser(e.target.value)}
-            className="w-[140px] sm:w-[220px] border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500"
-            title="Đổi user — mỗi user có dữ liệu profile & portfolio riêng (demo)"
-          >
-            {userOptions.map((opt) => (
-              <option key={opt.user_id} value={opt.user_id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
-            <Plus className="h-3.5 w-3.5" />
-            Tạo user
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Tạo user mới</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 mt-2">
-              <div className="space-y-1">
-                <label className="text-xs text-gray-600">Tên hiển thị</label>
-                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="VD: Trần Minh Anh" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-gray-600">Lớp</label>
-                  <select
-                    title="Chọn khối lớp"
-                    value={grade}
-                    onChange={(e) => setGrade(Number(e.target.value) as 10 | 11 | 12)}
-                    className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
-                  >
-                    <option value={10}>Lớp 10</option>
-                    <option value={11}>Lớp 11</option>
-                    <option value={12}>Lớp 12</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-gray-600">Ngành mục tiêu</label>
-                  <select
-                    title="Chọn ngành mục tiêu"
-                    value={targetMajor}
-                    onChange={(e) => setTargetMajor(e.target.value as 'cntt' | 'toan_thong_ke')}
-                    className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
-                  >
-                    <option value="cntt">CNTT</option>
-                    <option value="toan_thong_ke">Toán & Thống kê</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-gray-600">Trường</label>
-                <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="VD: THPT Chuyên Lam Sơn" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-gray-600">Tỉnh/Thành</label>
-                <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="VD: Thanh Hóa" />
-              </div>
-              <button
-                onClick={handleCreate}
-                disabled={!canCreate}
-                className="w-full h-9 rounded-lg bg-green-600 text-white text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700"
+        <h1 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white truncate">{title}</h1>
+
+        {/* Demo user switcher — hidden when authenticated */}
+        {authChecked && !isAuth && (
+          <>
+            <label className="flex items-center gap-2 text-xs text-gray-500 shrink-0">
+              <Users className="w-4 h-4 text-gray-400 hidden sm:block" />
+              <span className="sr-only">Chọn hồ sơ demo</span>
+              <select
+                value={currentUserId}
+                onChange={(e) => setCurrentUser(e.target.value)}
+                className="w-[140px] sm:w-[200px] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                title="Đổi user — mỗi user có dữ liệu profile & portfolio riêng (demo)"
               >
-                Tạo và chuyển sang user mới
-              </button>
-            </div>
-          </DialogContent>
-        </Dialog>
+                {userOptions.map((opt) => (
+                  <option key={opt.user_id} value={opt.user_id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <Plus className="h-3.5 w-3.5" />
+                Tạo user
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Tạo user mới</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 mt-2">
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-600">Tên hiển thị</label>
+                    <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="VD: Trần Minh Anh" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-gray-600">Lớp</label>
+                      <select
+                        title="Chọn khối lớp"
+                        value={grade}
+                        onChange={(e) => setGrade(Number(e.target.value) as 10 | 11 | 12)}
+                        className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
+                      >
+                        <option value={10}>Lớp 10</option>
+                        <option value={11}>Lớp 11</option>
+                        <option value={12}>Lớp 12</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-gray-600">Ngành mục tiêu</label>
+                      <select
+                        title="Chọn ngành mục tiêu"
+                        value={targetMajor}
+                        onChange={(e) => setTargetMajor(e.target.value as 'cntt' | 'toan_thong_ke')}
+                        className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
+                      >
+                        <option value="cntt">CNTT</option>
+                        <option value="toan_thong_ke">Toán & Thống kê</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-600">Trường</label>
+                    <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="VD: THPT Chuyên Lam Sơn" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-600">Tỉnh/Thành</label>
+                    <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="VD: Thanh Hóa" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCreate}
+                    disabled={!canCreate}
+                    className="w-full h-9 rounded-lg bg-green-600 text-white text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700"
+                  >
+                    Tạo và chuyển sang user mới
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
-      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        <div className="hidden sm:flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1">
+
+      {/* Right: OCS badge, theme toggle, bell, avatar */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="hidden sm:flex items-center gap-1.5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-full px-3 py-1">
           <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-sm font-semibold text-green-700">OCS {total_ocs}</span>
-          <span className="text-xs text-green-600">/100</span>
+          <span className="text-sm font-semibold text-green-700 dark:text-green-400">OCS {total_ocs}</span>
+          <span className="text-xs text-green-600 dark:text-green-500">/100</span>
         </div>
-        <button className="relative text-gray-500 hover:text-gray-700 hidden sm:block">
+
+        <ThemeToggle variant="ghost" />
+
+        <button type="button" className="relative text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hidden sm:block">
           <Bell className="w-5 h-5" />
           <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">2</span>
         </button>
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1">
-          <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold">
-            {profile.display_name.charAt(0)}
+
+        {/* Authenticated: profile dropdown */}
+        {isAuth ? (
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg px-2 py-1 transition-colors"
+            >
+              <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {authUser.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="text-sm hidden md:block text-left">
+                <div className="font-medium text-gray-700 dark:text-gray-200 leading-tight">{authUser.name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{authUser.email}</div>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{authUser.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{authUser.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setProfileOpen(false); router.push('/profile') }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Cài đặt hồ sơ
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Đăng xuất
+                </button>
+              </div>
+            )}
           </div>
-          <div className="text-sm hidden md:block">
-            <div className="font-medium text-gray-700 leading-tight">{profile.display_name}</div>
-            <div className="text-xs text-gray-500">Lớp {profile.grade} · {profile.school_name}</div>
+        ) : (
+          /* Demo mode: static avatar */
+          <div className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg px-2 py-1 transition-colors">
+            <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold">
+              {profile.display_name.charAt(0)}
+            </div>
+            <div className="text-sm hidden md:block">
+              <div className="font-medium text-gray-700 dark:text-gray-200 leading-tight">{profile.display_name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Lớp {profile.grade} · {profile.school_name}</div>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>
-          <ChevronDown className="w-4 h-4 text-gray-400" />
-        </div>
+        )}
       </div>
     </header>
   )

@@ -76,13 +76,13 @@ export default function DashboardPage() {
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {[
-            { label: 'Hoạt động đã nhập', value: totalCount, color: 'text-blue-600' },
-            { label: 'Slot đã dùng', value: `${slottedCount}/10`, color: 'text-green-600' },
-            { label: 'OCS Score', value: total_ocs, color: 'text-green-700' },
-            { label: 'Trường mục tiêu', value: profile.target_schools.length, color: 'text-purple-600' },
+            { label: 'Hoạt động đã nhập', value: totalCount, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Slot đã dùng', value: `${slottedCount}/10`, color: 'text-green-600 dark:text-green-400' },
+            { label: 'OCS Score', value: total_ocs, color: 'text-green-700 dark:text-green-400' },
+            { label: 'Trường mục tiêu', value: profile.target_schools.length, color: 'text-purple-600 dark:text-purple-400' },
           ].map(({ label, value, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <p className="text-sm text-gray-500 mb-1">{label}</p>
+            <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{label}</p>
               <p className={`text-3xl font-bold ${color}`}>{value}</p>
             </div>
           ))}
@@ -90,86 +90,61 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* OCS Gauge */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center justify-center">
-            <h2 className="text-sm font-semibold text-gray-600 mb-4">OCS Score</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm flex flex-col items-center justify-center">
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-4">OCS Score</h2>
             <div className="relative w-36 h-36">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#374151" strokeWidth="10" className="dark:stroke-gray-700 stroke-gray-200" />
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  strokeWidth="10"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="none"
-                  stroke="#16a34a"
-                  strokeWidth="10"
-                  strokeLinecap="round"
+                  cx="50" cy="50" r="40" fill="none"
+                  stroke="#16a34a" strokeWidth="10" strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={dashOffset}
                   className="transition-all duration-700"
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-green-700">{total_ocs}</span>
-                <span className="text-xs text-gray-500">/100</span>
+                <span className="text-3xl font-bold text-green-700 dark:text-green-400">{total_ocs}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">/100</span>
               </div>
             </div>
-            <p className="mt-3 text-sm text-gray-500">Overall Competency Score</p>
+            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Overall Competency Score</p>
           </div>
 
           {/* T-Shape Radar */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-600 mb-2">T-Shape Radar</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">T-Shape Radar</h2>
             <ResponsiveContainer width="100%" height={220}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="#e5e7eb" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fontSize: 10, fill: '#6b7280' }}
-                />
-                <PolarRadiusAxis
-                  angle={30}
-                  domain={[0, 100]}
-                  tick={false}
-                  axisLine={false}
-                />
-                <Radar
-                  dataKey="score"
-                  stroke="#16a34a"
-                  fill="#16a34a"
-                  fillOpacity={0.25}
-                />
+                <PolarGrid stroke="#374151" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar dataKey="score" stroke="#16a34a" fill="#16a34a" fillOpacity={0.25} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Quick Summary */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-3">
-            <h2 className="text-sm font-semibold text-gray-600">Hồ sơ cá nhân</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm space-y-3">
+            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Hồ sơ cá nhân</h2>
             {[
-              { label: 'GPA', value: PROFILE_GPA === null ? 'Chua cap nhat' : PROFILE_GPA.toFixed(1) },
-              { label: 'SAT', value: PROFILE_SAT === null ? 'Chua cap nhat' : PROFILE_SAT.toString() },
-              { label: 'IELTS', value: PROFILE_IELTS === null ? 'Chua cap nhat' : PROFILE_IELTS.toFixed(1) },
+              { label: 'GPA', value: PROFILE_GPA === null ? 'Chưa cập nhật' : PROFILE_GPA.toFixed(1) },
+              { label: 'SAT', value: PROFILE_SAT === null ? 'Chưa cập nhật' : PROFILE_SAT.toString() },
+              { label: 'IELTS', value: PROFILE_IELTS === null ? 'Chưa cập nhật' : PROFILE_IELTS.toFixed(1) },
               { label: 'Trường', value: profile.school_name },
               { label: 'Ngành', value: profile.target_major === 'cntt' ? 'CNTT' : 'Toán & Thống kê' },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">{label}</span>
-                <span className="font-semibold text-gray-800">{value}</span>
+                <span className="text-gray-500 dark:text-gray-400">{label}</span>
+                <span className="font-semibold text-gray-800 dark:text-gray-100">{value}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Traffic Light Grid */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">Traffic Light — Mức độ phù hợp</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">Traffic Light — Mức độ phù hợp</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {BIG6_SCHOOLS.map((school) => {
               const { light, pct, label } = computeTrafficLight(
@@ -179,27 +154,23 @@ export default function DashboardPage() {
                 school
               )
               const dotColor =
-                light === 'green'
-                  ? 'bg-green-500'
-                  : light === 'yellow'
-                  ? 'bg-yellow-400'
-                  : 'bg-red-500'
+                light === 'green' ? 'bg-green-500' : light === 'yellow' ? 'bg-yellow-400' : 'bg-red-500'
               const textColor =
                 light === 'green'
-                  ? 'text-green-700'
+                  ? 'text-green-700 dark:text-green-400'
                   : light === 'yellow'
-                  ? 'text-yellow-700'
-                  : 'text-red-600'
+                  ? 'text-yellow-700 dark:text-yellow-400'
+                  : 'text-red-600 dark:text-red-400'
 
               return (
                 <div
                   key={school.school_id}
-                  className="flex items-center justify-between border border-gray-100 rounded-lg p-4 bg-gray-50"
+                  className="flex items-center justify-between border border-gray-100 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/40"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${dotColor} shrink-0`} />
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">{school.short_name}</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{school.short_name}</p>
                       <p className={`text-xs font-medium ${textColor}`}>{label}</p>
                     </div>
                   </div>
@@ -211,28 +182,26 @@ export default function DashboardPage() {
         </div>
 
         {/* OCS Breakdown Table */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">OCS Breakdown — Top 5 Hoạt động</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">OCS Breakdown — Top 5 Hoạt động</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left">
-                  {['Hoạt động', 'Danh mục', 'Base Score', 'Trust Weight', 'Relevance', 'Final Score'].map(
-                    (h) => (
-                      <th key={h} className="pb-3 pr-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-                        {h}
-                      </th>
-                    )
-                  )}
+                <tr className="border-b border-gray-100 dark:border-gray-700 text-left">
+                  {['Hoạt động', 'Danh mục', 'Base Score', 'Trust Weight', 'Relevance', 'Final Score'].map((h) => (
+                    <th key={h} className="pb-3 pr-4 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                 {top5.map((item) => {
                   const activity = activities.find((a) => a.activity_id === item.activity_id)
                   const cat = activity?.category ?? 'competition'
                   return (
                     <tr key={item.activity_id}>
-                      <td className="py-3 pr-4 font-medium text-gray-800 max-w-xs truncate">
+                      <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-100 max-w-xs truncate">
                         {item.title}
                       </td>
                       <td className="py-3 pr-4">
@@ -240,10 +209,10 @@ export default function DashboardPage() {
                           {CATEGORY_LABELS[cat as ActivityCategory]}
                         </span>
                       </td>
-                      <td className="py-3 pr-4 text-gray-700">{item.base_score}</td>
-                      <td className="py-3 pr-4 text-gray-700">×{item.trust_weight}</td>
-                      <td className="py-3 pr-4 text-gray-700">×{item.relevance_multiplier}</td>
-                      <td className="py-3 pr-4 font-bold text-green-700">
+                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{item.base_score}</td>
+                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.trust_weight}</td>
+                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.relevance_multiplier}</td>
+                      <td className="py-3 pr-4 font-bold text-green-700 dark:text-green-400">
                         {item.final_score.toFixed(2)}
                       </td>
                     </tr>

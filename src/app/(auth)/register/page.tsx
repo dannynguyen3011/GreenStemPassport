@@ -53,6 +53,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   // Profile fields (saved to DB on register)
+  const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [grade, setGrade] = useState<10 | 11 | 12>(11)
   const [schoolName, setSchoolName] = useState('')
@@ -75,6 +76,10 @@ export default function RegisterPage() {
     if (password !== confirmPassword) { setError('Mật khẩu xác nhận không khớp.'); return }
     if (password.length < 6) { setError('Mật khẩu phải có ít nhất 6 ký tự.'); return }
     if (!province) { setError('Vui lòng chọn tỉnh/thành phố.'); return }
+    if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
+      setError('Tên đăng nhập chỉ gồm chữ thường, số, dấu gạch dưới, 3–20 ký tự.')
+      return
+    }
 
     setLoading(true)
     try {
@@ -121,6 +126,7 @@ export default function RegisterPage() {
             school_name: schoolName,
             province,
             target_major: targetMajor,
+            username: username || undefined,
           }),
         })
         if (!profileRes.ok) {
@@ -222,6 +228,34 @@ export default function RegisterPage() {
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider pt-1">Thông tin tài khoản</div>
 
               <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  Tên đăng nhập
+                  <span className="text-xs text-gray-400 font-normal">(tuỳ chọn)</span>
+                </label>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Dùng để đăng nhập thay cho email — chỉ chữ thường, số, dấu _</p>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">@</span>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    placeholder="vd: nguyen_van_a"
+                    maxLength={20}
+                    className={`${inputCls} pl-7 ${
+                      username && !/^[a-z0-9_]{3,20}$/.test(username)
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/30'
+                        : username && /^[a-z0-9_]{3,20}$/.test(username)
+                        ? 'border-green-500 focus:border-green-500 focus:ring-green-500/30'
+                        : ''
+                    }`}
+                  />
+                </div>
+                {username && !/^[a-z0-9_]{3,20}$/.test(username) && (
+                  <p className="text-xs text-red-500">Tối thiểu 3 ký tự, chỉ a–z, 0–9, dấu _</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
                 <Label hint="Tên sẽ hiển thị trong hồ sơ và khi Mentor xem">Tên hiển thị</Label>
                 <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required
                   placeholder="VD: Nguyễn Văn A" className={inputCls} />
@@ -304,7 +338,7 @@ export default function RegisterPage() {
                 </select>
               </div>
 
-              <button type="submit" disabled={loading || !email || !password || !displayName || !schoolName || !province}
+              <button type="submit" disabled={loading || !email || !password || !displayName || !schoolName || !province || (!!username && !/^[a-z0-9_]{3,20}$/.test(username))}
                 className="w-full h-11 bg-green-600 hover:bg-green-500 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white disabled:text-gray-400 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 mt-2">
                 {loading
                   ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

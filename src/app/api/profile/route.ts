@@ -15,6 +15,7 @@ const profileSchema = z.object({
   grade: z.union([z.literal(10), z.literal(11), z.literal(12)]),
   school_name: z.string().min(1).max(200),
   province: z.string().min(1).max(100),
+  username: z.string().regex(/^[a-z0-9_]{3,20}$/).optional(),
   gpa: z.number().min(0).max(10).nullable().optional(),
   sat_score: z.number().int().min(400).max(1600).nullable().optional(),
   ielts_score: z.number().min(0).max(9).nullable().optional(),
@@ -73,6 +74,8 @@ export async function POST(req: NextRequest) {
       .insert(schema.userProfiles)
       .values({
         user_id: user.id,
+        email: user.email || null,
+        username: data.username?.toLowerCase() ?? null,
         display_name: data.display_name,
         grade: data.grade,
         school_name: data.school_name,
@@ -109,6 +112,7 @@ export async function PUT(req: NextRequest) {
     if (d.grade !== undefined) updates.grade = d.grade
     if (d.school_name !== undefined) updates.school_name = d.school_name
     if (d.province !== undefined) updates.province = d.province
+    if (d.username !== undefined) updates.username = d.username?.toLowerCase() ?? null
     if (d.gpa !== undefined) updates.gpa = d.gpa?.toString()
     if (d.sat_score !== undefined) updates.sat_score = d.sat_score
     if (d.ielts_score !== undefined) updates.ielts_score = d.ielts_score?.toString()

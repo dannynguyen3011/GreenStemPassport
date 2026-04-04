@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('') // email or username
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -21,11 +21,30 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const supabase = getSupabaseBrowser()
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+
+      // Resolve login email: if no @ it's a username → look up the email first
+      let loginEmail = identifier.trim()
+      if (!loginEmail.includes('@')) {
+        const res = await fetch(
+          `/api/auth/lookup-username?username=${encodeURIComponent(loginEmail)}`
+        )
+        if (!res.ok) {
+          setError('Tên đăng nhập không tồn tại. Vui lòng kiểm tra lại.')
+          return
+        }
+        const data = await res.json()
+        loginEmail = data.email
+      }
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      })
+
       if (authError) {
         setError(
           authError.message === 'Invalid login credentials'
-            ? 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.'
+            ? 'Email/tên đăng nhập hoặc mật khẩu không đúng. Vui lòng thử lại.'
             : authError.message
         )
         return
@@ -117,10 +136,15 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email hoặc tên đăng nhập
+                </label>
                 <input
-                  type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                  placeholder="ten@example.com"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                  placeholder="email@example.com hoặc @username"
                   className="w-full h-11 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-xl px-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/30 transition-colors"
                 />
               </div>
@@ -129,7 +153,10 @@ export default function LoginPage() {
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                     placeholder="••••••••"
                     className="w-full h-11 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-xl px-4 pr-11 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/30 transition-colors"
                   />
@@ -140,7 +167,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <button type="submit" disabled={loading || !email || !password}
+              <button type="submit" disabled={loading || !identifier || !password}
                 className="w-full h-11 bg-green-600 hover:bg-green-500 disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white disabled:text-gray-400 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 mt-2">
                 {loading
                   ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

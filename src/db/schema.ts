@@ -45,6 +45,8 @@ export const targetMajorEnum = pgEnum('target_major', ['cntt', 'toan_thong_ke'])
  */
 export const userProfiles = pgTable('user_profiles', {
   user_id: uuid('user_id').primaryKey(),          // = Supabase Auth uid
+  username: varchar('username', { length: 50 }).unique(),  // unique login handle
+  email: varchar('email', { length: 255 }).unique(),       // mirrored from Auth for username lookup
   display_name: varchar('display_name', { length: 100 }).notNull(),
   grade: integer('grade').notNull(),               // 10 | 11 | 12
   school_name: varchar('school_name', { length: 200 }).notNull(),
