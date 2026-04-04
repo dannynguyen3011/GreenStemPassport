@@ -4,28 +4,21 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProfileStore } from '@/store/useProfileStore'
 import { calculateOCS } from '@/lib/ocs'
-import { Bell, ChevronDown, Plus, Users, LogOut, Settings } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+import { Bell, ChevronDown, Users, LogOut, Settings } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 
 interface TopbarProps {
   title: string
+  /** Force demo mode — always show user switcher, never auth dropdown (used on /demo route) */
+  forceDemo?: boolean
 }
 
-export function Topbar({ title }: TopbarProps) {
+export function Topbar({ title, forceDemo = false }: TopbarProps) {
   const router = useRouter()
-  const { profile, activities, currentUserId, userOptions, setCurrentUser, createUser } = useProfileStore()
+  const { profile, activities, currentUserId, userOptions, setCurrentUser } = useProfileStore()
   const { total_ocs } = calculateOCS(activities, profile.target_major)
 
-  // Demo create-user dialog state
-  const [open, setOpen] = useState(false)
-  const [displayName, setDisplayName] = useState('')
-  const [grade, setGrade] = useState<10 | 11 | 12>(10)
-  const [schoolName, setSchoolName] = useState('')
-  const [province, setProvince] = useState('')
-  const [targetMajor, setTargetMajor] = useState<'cntt' | 'toan_thong_ke'>('cntt')
 
   // Auth state
   const [authUser, setAuthUser] = useState<{ name: string; email: string } | null>(null)
@@ -36,6 +29,10 @@ export function Topbar({ title }: TopbarProps) {
   const profileRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (forceDemo) {
+      setAuthChecked(true)
+      return
+    }
     const check = async () => {
       try {
         const supabase = getSupabaseBrowser()
@@ -51,7 +48,7 @@ export function Topbar({ title }: TopbarProps) {
       }
     }
     check()
-  }, [])
+  }, [forceDemo])
 
   // Close profile dropdown on outside click
   useEffect(() => {
@@ -70,25 +67,6 @@ export function Topbar({ title }: TopbarProps) {
     router.push('/login')
   }
 
-  const canCreate = displayName.trim().length >= 2 && schoolName.trim().length >= 2
-
-  const handleCreate = () => {
-    if (!canCreate) return
-    createUser({
-      display_name: displayName.trim(),
-      grade,
-      school_name: schoolName.trim(),
-      province: province.trim() || 'Chưa cập nhật',
-      target_major: targetMajor,
-    })
-    setDisplayName('')
-    setGrade(10)
-    setSchoolName('')
-    setProvince('')
-    setTargetMajor('cntt')
-    setOpen(false)
-  }
-
   const isAuth = authChecked && authUser !== null
 
   return (
@@ -100,7 +78,6 @@ export function Topbar({ title }: TopbarProps) {
 
         {/* Demo user switcher — hidden when authenticated */}
         {authChecked && !isAuth && (
-          <>
             <label className="flex items-center gap-2 text-xs text-gray-500 shrink-0">
               <Users className="w-4 h-4 text-gray-400 hidden sm:block" />
               <span className="sr-only">Chọn hồ sơ demo</span>
@@ -117,68 +94,6 @@ export function Topbar({ title }: TopbarProps) {
                 ))}
               </select>
             </label>
-
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <Plus className="h-3.5 w-3.5" />
-                Tạo user
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Tạo user mới</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3 mt-2">
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-600">Tên hiển thị</label>
-                    <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="VD: Trần Minh Anh" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs text-gray-600">Lớp</label>
-                      <select
-                        title="Chọn khối lớp"
-                        value={grade}
-                        onChange={(e) => setGrade(Number(e.target.value) as 10 | 11 | 12)}
-                        className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
-                      >
-                        <option value={10}>Lớp 10</option>
-                        <option value={11}>Lớp 11</option>
-                        <option value={12}>Lớp 12</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-gray-600">Ngành mục tiêu</label>
-                      <select
-                        title="Chọn ngành mục tiêu"
-                        value={targetMajor}
-                        onChange={(e) => setTargetMajor(e.target.value as 'cntt' | 'toan_thong_ke')}
-                        className="w-full h-8 rounded-lg border border-gray-200 px-2 text-sm bg-white"
-                      >
-                        <option value="cntt">CNTT</option>
-                        <option value="toan_thong_ke">Toán & Thống kê</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-600">Trường</label>
-                    <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="VD: THPT Chuyên Lam Sơn" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-600">Tỉnh/Thành</label>
-                    <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="VD: Thanh Hóa" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={!canCreate}
-                    className="w-full h-9 rounded-lg bg-green-600 text-white text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700"
-                  >
-                    Tạo và chuyển sang user mới
-                  </button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
         )}
       </div>
 

@@ -29,7 +29,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-full w-60 bg-gray-900 flex flex-col z-40">
       {/* Logo */}
       <div className="p-5 border-b border-gray-700">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
             <Leaf className="w-5 h-5 text-white" />
           </div>
@@ -37,7 +37,7 @@ export function Sidebar() {
             <div className="text-white font-bold text-sm leading-tight">Green STEM</div>
             <div className="text-green-400 text-xs">Compass</div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}

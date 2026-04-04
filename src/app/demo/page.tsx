@@ -44,7 +44,7 @@ export default function DemoPage() {
 
   return (
     <div className="flex flex-col h-full overflow-auto">
-      <Topbar title="Demo — Hồ Sơ Năng Lực" />
+      <Topbar title="Demo — Hồ Sơ Năng Lực" forceDemo />
 
       {/* Demo banner */}
       <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 px-6 py-2.5 flex items-center justify-between gap-4">
