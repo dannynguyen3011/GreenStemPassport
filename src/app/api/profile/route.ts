@@ -6,9 +6,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth } from '@/lib/auth'
-import { detectUnrealisticGoal } from '@/lib/matching'
+import { db, schema } from '@/backend/db'
+import { requireAuth } from '@/backend/auth'
+import { detectUnrealisticGoal } from '@/shared/matching'
 
 const profileSchema = z.object({
   display_name: z.string().min(1).max(100),

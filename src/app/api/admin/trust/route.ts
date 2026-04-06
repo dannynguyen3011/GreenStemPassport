@@ -10,8 +10,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { eq, sql } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth, isAdmin } from '@/lib/auth'
+import { db, schema } from '@/backend/db'
+import { requireAuth, isAdmin } from '@/backend/auth'
 
 const approveSchema = z.object({
   activity_id: z.string().uuid(),

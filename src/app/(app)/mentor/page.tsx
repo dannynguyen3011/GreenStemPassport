@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
-import { DEMO_MENTORS } from '@/lib/constants'
+import { DEMO_MENTORS } from '@/shared/constants'
 import { useProfileStore } from '@/store/useProfileStore'
 import { Star, ShieldCheck, MessageSquareShare, Search } from 'lucide-react'
 

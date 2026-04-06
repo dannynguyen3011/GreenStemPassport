@@ -11,8 +11,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { and, eq } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth } from '@/lib/auth'
+import { db, schema } from '@/backend/db'
+import { requireAuth } from '@/backend/auth'
 
 const trustRequestSchema = z.discriminatedUnion('tier', [
   z.object({

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
-import { getSupabaseBrowser } from '@/lib/supabase-browser'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 import { CheckCircle, AlertCircle, Save, Lock } from 'lucide-react'
 
 const PROVINCES = [
@@ -26,7 +26,6 @@ export default function ProfilePage() {
   const { profile, updateProfile } = useProfileStore()
   const [isAuth, setIsAuth] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
 
   // Form state — pre-filled from store
   const [displayName, setDisplayName] = useState(profile.display_name)
@@ -48,7 +47,6 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         setIsAuth(true)
-        setToken(session.access_token)
       }
       setAuthChecked(true)
     }
@@ -85,11 +83,18 @@ export default function ProfilePage() {
     }
 
     try {
+      const { data: { session } } = await getSupabaseBrowser().auth.getSession()
+      const freshToken = session?.access_token
+      if (!freshToken) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+        return
+      }
+
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${freshToken}`,
         },
         body: JSON.stringify(body),
       })
@@ -163,7 +168,7 @@ export default function ProfilePage() {
 
             <div>
               <label className={labelCls}>Tên hiển thị</label>
-              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required className={inputCls} />
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required placeholder="VD: Nguyễn Minh Anh" className={inputCls} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

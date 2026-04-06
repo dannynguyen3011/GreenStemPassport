@@ -2,8 +2,8 @@
 
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
-import { BIG6_SCHOOLS, CATEGORY_LABELS } from '@/lib/constants'
-import { calculateOCS } from '@/lib/ocs'
+import { BIG6_SCHOOLS, CATEGORY_LABELS } from '@/shared/constants'
+import { calculateOCS } from '@/shared/ocs'
 import type { SchoolPersona } from '@/types'
 
 type Gap = {

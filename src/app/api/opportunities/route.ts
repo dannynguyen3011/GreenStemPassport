@@ -8,8 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { and, eq, gte, sql } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth, isAdmin } from '@/lib/auth'
+import { db, schema } from '@/backend/db'
+import { requireAuth, isAdmin } from '@/backend/auth'
 
 export async function GET(req: NextRequest) {
   try {

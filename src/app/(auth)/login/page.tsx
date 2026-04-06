@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Leaf, Eye, EyeOff, ArrowRight, AlertCircle, ArrowLeft } from 'lucide-react'
-import { getSupabaseBrowser } from '@/lib/supabase-browser'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 
 export default function LoginPage() {

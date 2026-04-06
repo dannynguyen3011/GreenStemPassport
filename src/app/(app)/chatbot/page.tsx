@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
-import { DEMO_CHAT } from '@/lib/constants'
+import { DEMO_CHAT } from '@/shared/constants'
 import type { ChatMessage } from '@/types'
 import { SendHorizonal } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'

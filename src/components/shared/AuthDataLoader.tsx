@@ -7,7 +7,7 @@
  * In demo mode (no session) it does nothing.
  */
 import { useEffect } from 'react'
-import { getSupabaseBrowser } from '@/lib/supabase-browser'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 import { useProfileStore } from '@/store/useProfileStore'
 import type { UserProfile, Activity, ActivityCategory, TargetMajor, TrustTier } from '@/types'
 

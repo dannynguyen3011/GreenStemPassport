@@ -9,9 +9,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth } from '@/lib/auth'
-import { calculateOCS } from '@/lib/ocs'
+import { db, schema } from '@/backend/db'
+import { requireAuth } from '@/backend/auth'
+import { calculateOCS } from '@/shared/ocs'
 import type { Activity } from '@/types'
 
 const requestSchema = z.object({

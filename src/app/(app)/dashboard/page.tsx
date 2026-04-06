@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
-import { calculateOCS } from '@/lib/ocs'
-import { BIG6_SCHOOLS, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/constants'
+import { calculateOCS } from '@/shared/ocs'
+import { BIG6_SCHOOLS, CATEGORY_LABELS, CATEGORY_COLORS } from '@/shared/constants'
 import {
   RadarChart,
   Radar,
@@ -13,6 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import type { ActivityCategory } from '@/types'
+import { AlertCircle, ArrowRight } from 'lucide-react'
 
 const RADAR_CATEGORIES: { label: string; categories: ActivityCategory[] }[] = [
   { label: 'Deep STEM', categories: ['competition', 'research'] },
@@ -47,32 +49,51 @@ export default function DashboardPage() {
   const slottedCount = activities.filter((a) => a.slot_order !== null).length
   const totalCount = activities.length
 
-  // SVG circle gauge
-  const circumference = 2 * Math.PI * 40 // r=40
+  const circumference = 2 * Math.PI * 40
   const dashOffset = circumference - (total_ocs / 100) * circumference
 
-  // Radar data
   const radarData = RADAR_CATEGORIES.map(({ label, categories }) => {
     const relevant = activities.filter((a) => categories.includes(a.category))
     const score = relevant.reduce((sum, a) => sum + (a.base_score ?? 0), 0)
     return { subject: label, score: Math.min(score * 10, 100), fullMark: 100 }
   })
 
-  // Top 5 breakdown
   const top5 = breakdown.slice(0, 5)
 
-  const PROFILE_GPA = profile.gpa
-  const PROFILE_SAT = profile.sat_score
-  const PROFILE_IELTS = profile.ielts_score
-  const currentGpaForMatching = PROFILE_GPA ?? 0
-  const currentSatForMatching = PROFILE_SAT ?? 0
-  const currentIeltsForMatching = PROFILE_IELTS ?? 0
+  const gpa = profile.gpa ?? 0
+  const sat = profile.sat_score ?? 0
+  const ielts = profile.ielts_score ?? 0
+
+  const profileIncomplete = profile.gpa === null || profile.sat_score === null || profile.ielts_score === null
+  const noActivities = activities.length === 0
 
   return (
     <div className="flex flex-col h-full overflow-auto">
       <Topbar title="Dashboard — Hồ Sơ Năng Lực" />
 
       <main className="flex-1 p-4 sm:p-6 space-y-6">
+
+        {/* Incomplete profile banner */}
+        {profileIncomplete && (
+          <div className="flex items-center justify-between gap-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Hồ sơ chưa đầy đủ</p>
+                <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
+                  Điền GPA, SAT, IELTS để Traffic Light và OCS hoạt động chính xác.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/profile"
+              className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Cập nhật <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        )}
+
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {[
@@ -109,6 +130,11 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Overall Competency Score</p>
+            {noActivities && (
+              <Link href="/portfolio" className="mt-3 text-xs text-green-600 dark:text-green-400 hover:underline">
+                + Thêm hoạt động để tăng OCS
+              </Link>
+            )}
           </div>
 
           {/* T-Shape Radar */}
@@ -124,19 +150,24 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Quick Summary */}
+          {/* Quick Profile Summary */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm space-y-3">
-            <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Hồ sơ cá nhân</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Hồ sơ cá nhân</h2>
+              <Link href="/profile" className="text-xs text-green-600 dark:text-green-400 hover:underline">Chỉnh sửa</Link>
+            </div>
             {[
-              { label: 'GPA', value: PROFILE_GPA === null ? 'Chưa cập nhật' : PROFILE_GPA.toFixed(1) },
-              { label: 'SAT', value: PROFILE_SAT === null ? 'Chưa cập nhật' : PROFILE_SAT.toString() },
-              { label: 'IELTS', value: PROFILE_IELTS === null ? 'Chưa cập nhật' : PROFILE_IELTS.toFixed(1) },
-              { label: 'Trường', value: profile.school_name },
-              { label: 'Ngành', value: profile.target_major === 'cntt' ? 'CNTT' : 'Toán & Thống kê' },
-            ].map(({ label, value }) => (
+              { label: 'GPA', value: profile.gpa === null ? '—' : profile.gpa.toFixed(1), missing: profile.gpa === null },
+              { label: 'SAT', value: profile.sat_score === null ? '—' : profile.sat_score.toString(), missing: profile.sat_score === null },
+              { label: 'IELTS', value: profile.ielts_score === null ? '—' : profile.ielts_score.toFixed(1), missing: profile.ielts_score === null },
+              { label: 'Trường', value: profile.school_name, missing: false },
+              { label: 'Ngành', value: profile.target_major === 'cntt' ? 'CNTT' : 'Toán & Thống kê', missing: false },
+            ].map(({ label, value, missing }) => (
               <div key={label} className="flex justify-between items-center text-sm">
                 <span className="text-gray-500 dark:text-gray-400">{label}</span>
-                <span className="font-semibold text-gray-800 dark:text-gray-100">{value}</span>
+                <span className={`font-semibold ${missing ? 'text-amber-500 dark:text-amber-400' : 'text-gray-800 dark:text-gray-100'}`}>
+                  {value}
+                </span>
               </div>
             ))}
           </div>
@@ -145,14 +176,14 @@ export default function DashboardPage() {
         {/* Traffic Light Grid */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">Traffic Light — Mức độ phù hợp</h2>
+          {profileIncomplete && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mb-4">
+              ⚠ Kết quả dựa trên điểm số hiện tại. Cập nhật GPA/SAT/IELTS để có kết quả chính xác hơn.
+            </p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {BIG6_SCHOOLS.map((school) => {
-              const { light, pct, label } = computeTrafficLight(
-                currentGpaForMatching,
-                currentSatForMatching,
-                currentIeltsForMatching,
-                school
-              )
+              const { light, pct, label } = computeTrafficLight(gpa, sat, ielts, school)
               const dotColor =
                 light === 'green' ? 'bg-green-500' : light === 'yellow' ? 'bg-yellow-400' : 'bg-red-500'
               const textColor =
@@ -184,43 +215,55 @@ export default function DashboardPage() {
         {/* OCS Breakdown Table */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4">OCS Breakdown — Top 5 Hoạt động</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-700 text-left">
-                  {['Hoạt động', 'Danh mục', 'Base Score', 'Trust Weight', 'Relevance', 'Final Score'].map((h) => (
-                    <th key={h} className="pb-3 pr-4 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                {top5.map((item) => {
-                  const activity = activities.find((a) => a.activity_id === item.activity_id)
-                  const cat = activity?.category ?? 'competition'
-                  return (
-                    <tr key={item.activity_id}>
-                      <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-100 max-w-xs truncate">
-                        {item.title}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[cat as ActivityCategory]}`}>
-                          {CATEGORY_LABELS[cat as ActivityCategory]}
-                        </span>
-                      </td>
-                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{item.base_score}</td>
-                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.trust_weight}</td>
-                      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.relevance_multiplier}</td>
-                      <td className="py-3 pr-4 font-bold text-green-700 dark:text-green-400">
-                        {item.final_score.toFixed(2)}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          {noActivities ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Bạn chưa có hoạt động nào trong portfolio.</p>
+              <Link
+                href="/portfolio"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
+              >
+                Thêm hoạt động đầu tiên <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-gray-700 text-left">
+                    {['Hoạt động', 'Danh mục', 'Base Score', 'Trust Weight', 'Relevance', 'Final Score'].map((h) => (
+                      <th key={h} className="pb-3 pr-4 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                  {top5.map((item) => {
+                    const activity = activities.find((a) => a.activity_id === item.activity_id)
+                    const cat = activity?.category ?? 'competition'
+                    return (
+                      <tr key={item.activity_id}>
+                        <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-100 max-w-xs truncate">
+                          {item.title}
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[cat as ActivityCategory]}`}>
+                            {CATEGORY_LABELS[cat as ActivityCategory]}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{item.base_score}</td>
+                        <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.trust_weight}</td>
+                        <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">×{item.relevance_multiplier}</td>
+                        <td className="py-3 pr-4 font-bold text-green-700 dark:text-green-400">
+                          {item.final_score.toFixed(2)}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </main>
     </div>

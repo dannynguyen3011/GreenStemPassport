@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
-import { calculateOCS } from '@/lib/ocs'
-import { BIG6_SCHOOLS, CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/constants'
+import { calculateOCS } from '@/shared/ocs'
+import { BIG6_SCHOOLS, CATEGORY_LABELS, CATEGORY_COLORS } from '@/shared/constants'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
 } from 'recharts'

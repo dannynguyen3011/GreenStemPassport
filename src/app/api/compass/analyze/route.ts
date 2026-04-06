@@ -8,10 +8,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth } from '@/lib/auth'
-import { analyzeCompass, detectUnrealisticGoal } from '@/lib/matching'
-import { calculateOCS } from '@/lib/ocs'
+import { db, schema } from '@/backend/db'
+import { requireAuth } from '@/backend/auth'
+import { analyzeCompass, detectUnrealisticGoal } from '@/shared/matching'
+import { calculateOCS } from '@/shared/ocs'
 import type { UserProfile, Activity } from '@/types'
 
 const requestSchema = z.object({

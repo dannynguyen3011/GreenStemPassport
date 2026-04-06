@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProfileStore } from '@/store/useProfileStore'
-import { calculateOCS } from '@/lib/ocs'
+import { calculateOCS } from '@/shared/ocs'
 import { Bell, ChevronDown, Users, LogOut, Settings } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
-import { getSupabaseBrowser } from '@/lib/supabase-browser'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 
 interface TopbarProps {
   title: string

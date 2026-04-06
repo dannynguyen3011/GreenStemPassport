@@ -4,8 +4,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { and, eq, sql } from 'drizzle-orm'
-import { db, schema } from '@/db'
-import { requireAuth } from '@/lib/auth'
+import { db, schema } from '@/backend/db'
+import { requireAuth } from '@/backend/auth'
 
 export async function GET(req: NextRequest) {
   try {
