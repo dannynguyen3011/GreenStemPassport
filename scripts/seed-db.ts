@@ -8,8 +8,8 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import * as schema from '../src/db/schema'
-import { BIG6_SCHOOLS, DEMO_OPPORTUNITIES } from '../src/lib/constants'
+import * as schema from '../src/backend/db/schema'
+import { BIG6_SCHOOLS, DEMO_OPPORTUNITIES } from '../src/shared/constants'
 
 const client = postgres(process.env.DATABASE_URL!, { prepare: false })
 const db = drizzle(client, { schema })

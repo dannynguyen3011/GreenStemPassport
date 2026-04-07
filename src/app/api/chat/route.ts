@@ -9,8 +9,8 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireAuth } from '@/lib/auth'
-import { ragChatStream } from '@/lib/rag'
+import { requireAuth } from '@/backend/auth'
+import { ragChatStream } from '@/backend/rag'
 
 const requestSchema = z.object({
   question: z.string().min(1).max(1000),

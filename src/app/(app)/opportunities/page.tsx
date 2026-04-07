@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
-import { DEMO_OPPORTUNITIES } from '@/lib/constants'
+import { DEMO_OPPORTUNITIES } from '@/shared/constants'
 import { useProfileStore } from '@/store/useProfileStore'
 import type { Opportunity } from '@/types'
 import { ExternalLink } from 'lucide-react'

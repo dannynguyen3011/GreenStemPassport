@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
 import { TrustBadge } from '@/components/shared/TrustBadge'
-import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/lib/constants'
+import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/shared/constants'
 import {
   Dialog,
   DialogContent,

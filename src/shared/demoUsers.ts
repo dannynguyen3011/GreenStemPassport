@@ -1,5 +1,5 @@
 import type { Activity, UserProfile } from '@/types'
-import { DEMO_ACTIVITIES } from '@/lib/constants'
+import { DEMO_ACTIVITIES } from '@/shared/constants'
 
 export type UserSwitchOption = {
   user_id: string

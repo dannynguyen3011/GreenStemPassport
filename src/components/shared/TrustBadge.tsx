@@ -1,4 +1,4 @@
-import { TRUST_LABELS } from '@/lib/constants'
+import { TRUST_LABELS } from '@/shared/constants'
 import type { TrustTier } from '@/types'
 
 const TRUST_VARIANT: Record<TrustTier, string> = {

@@ -135,7 +135,36 @@ cp .env.example .env.local   # fill in your keys
 npm run db:generate
 npm run db:migrate
 npm run db:seed
+npm install
+cp .env.example .env.local   # fill in your keys
+npm run db:generate
+npm run db:migrate
+npm run db:seed
 npm run dev
+```
+
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only) |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude |
+| `CHROMA_URL` | Chroma vector store URL (for RAG chatbot) |
+| `NEXT_PUBLIC_APP_URL` | Your deployed app URL |
+| `ADMIN_USER_IDS` | Comma-separated UUIDs with admin access |
+
+---
+
+## Deployment
+
+Deployed on Vercel. Every push to `main` triggers an automatic redeployment.
+
+After deploying, update your Supabase project:
+- **Authentication → URL Configuration → Site URL:** your Vercel URL
+- **Authentication → URL Configuration → Redirect URLs:** `https://your-app.vercel.app/**`
 ```
 
 ### Environment Variables

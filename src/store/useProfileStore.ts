@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import type { Activity, TargetMajor, UserProfile } from '@/types'
-import { buildInitialUserData, USER_SWITCH_OPTIONS, type UserSwitchOption } from '@/lib/demoUsers'
+import { buildInitialUserData, USER_SWITCH_OPTIONS, type UserSwitchOption } from '@/shared/demoUsers'
 
 const initial = buildInitialUserData()
 const DEFAULT_USER_ID = 'user-new'
