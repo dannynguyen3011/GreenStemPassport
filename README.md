@@ -241,6 +241,53 @@ npm run rag:ingest
 
 ---
 
+## Running with Docker
+
+The project ships with a multi-stage production `Dockerfile`, a `Dockerfile.dev` for hot reload, and a `docker-compose.yml` that spins up the Next.js app + ChromaDB locally.
+
+### Local development (recommended)
+
+Brings up Next.js (hot reload) + ChromaDB with a persistent volume. The compose file overrides `CHROMA_URL` to point at the local `chromadb` service, so you don't need to change your `.env.local`.
+
+```bash
+cp .env.example .env.local   # fill in Supabase + Anthropic keys
+docker compose up            # build + start both services
+# App: http://localhost:3000
+# Chroma: http://localhost:8000/api/v2/heartbeat
+
+docker compose logs -f app   # tail app logs
+docker compose down          # stop (keeps chroma_data volume)
+docker compose down -v       # stop AND wipe Chroma data
+```
+
+To ingest the RAG corpus into the local Chroma (after placing PDFs in `./corpus/`):
+
+```bash
+docker compose exec app npm run rag:ingest
+```
+
+### Production image
+
+Multi-stage build using Next.js standalone output. Final image is ~150 MB, runs as non-root, includes a health check.
+
+```bash
+docker build -t greenstem .
+docker run -p 3000:3000 --env-file .env.local greenstem
+```
+
+Deploy this image to any container host — Fly.io, Render, AWS ECS, Google Cloud Run, or a plain VPS. Set the same environment variables documented below.
+
+### File layout
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Multi-stage production build (deps → builder → runner) |
+| `Dockerfile.dev` | Development image used by `docker compose` for hot reload |
+| `docker-compose.yml` | Local stack: Next.js + ChromaDB with persistent volume |
+| `.dockerignore` | Excludes `node_modules`, `.env*`, `.next`, `corpus/`, etc. |
+
+---
+
 ## Environment Variables
 
 | Variable | Description |

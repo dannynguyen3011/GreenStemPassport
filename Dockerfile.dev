@@ -1,0 +1,23 @@
+# ─── Development Dockerfile — hot reload ────────────────────────────────────
+# Dùng với docker-compose.yml để dev local
+# Source code được mount qua volume → sửa file là Next.js reload ngay
+
+FROM node:20-alpine
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Cài dependencies trước (cache layer này khi package.json không đổi)
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Source code sẽ được mount qua docker-compose volumes
+# (không COPY ở đây để tránh phải rebuild khi sửa code)
+
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
