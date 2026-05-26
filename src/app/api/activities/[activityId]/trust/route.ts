@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { and, eq } from 'drizzle-orm'
 import { db, schema } from '@/backend/db'
 import { requireAuth } from '@/backend/auth'
+import { notifyAdmin } from '@/backend/rocketchat'
 
 const trustRequestSchema = z.discriminatedUnion('tier', [
   z.object({
@@ -83,6 +84,17 @@ export async function POST(req: NextRequest, { params }: Params) {
         .set({ trust_verified_by: `pending:${data.verifier_email}` })
         .where(eq(schema.activities.activity_id, activityId))
 
+      await notifyAdmin({
+        text: `📨 *TrustFactor Tier 2 request* — chờ giáo viên xác nhận`,
+        color: 'warning',
+        fields: [
+          { title: 'Activity', value: activity.title, short: true },
+          { title: 'Student ID', value: user.id, short: true },
+          { title: 'Verifier', value: data.verifier_name, short: true },
+          { title: 'Verifier email', value: data.verifier_email, short: true },
+        ],
+      })
+
       return NextResponse.json({
         success: true,
         message: `Yêu cầu xác thực đã gửi đến ${data.verifier_email}. Tier sẽ được cập nhật sau khi giáo viên xác nhận.`,
@@ -112,6 +124,17 @@ export async function POST(req: NextRequest, { params }: Params) {
           artifact_url: data.certificate_url,
         })
         .where(eq(schema.activities.activity_id, activityId))
+
+      await notifyAdmin({
+        text: `🎓 *TrustFactor Tier 3* — chứng chỉ mới cần admin review (SLA 24-48h)`,
+        color: 'danger',
+        fields: [
+          { title: 'Activity', value: activity.title, short: true },
+          { title: 'Student ID', value: user.id, short: true },
+          { title: 'Issuer', value: data.certificate_issuer, short: true },
+          { title: 'Certificate URL', value: data.certificate_url, short: false },
+        ],
+      })
 
       return NextResponse.json({
         success: true,
