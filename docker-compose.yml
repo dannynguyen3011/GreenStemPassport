@@ -49,6 +49,60 @@ services:
       - ALLOW_RESET=TRUE
     restart: unless-stopped
 
+  # ─── Rocket.Chat (team chat platform) ─────────────────────────────────────
+  rocketchat:
+    image: rocket.chat:latest
+    container_name: greenstem-rocketchat
+    # Rocket.Chat không có ARM64 build chính thức → emulate amd64 qua Rosetta
+    # (chậm hơn 1 chút trên Mac M-series nhưng vẫn chạy được cho dev)
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      # PORT bên trong container — host map sang 3030 (vì 3000 đã dùng cho app)
+      - PORT=3000
+      - ROOT_URL=http://localhost:3030
+      - MONGO_URL=mongodb://mongodb:27017/rocketchat?replicaSet=rs0
+      - MONGO_OPLOG_URL=mongodb://mongodb:27017/local?replicaSet=rs0
+      # Cho phép Rocket.Chat ghi data ban đầu (admin account, settings)
+      - OVERWRITE_SETTING_Show_Setup_Wizard=pending
+    depends_on:
+      mongodb-init:
+        condition: service_completed_successfully
+    ports:
+      - "3030:3000"
+
+  # ─── MongoDB (database cho Rocket.Chat) ───────────────────────────────────
+  mongodb:
+    image: mongo:8.0
+    container_name: greenstem-mongodb
+    restart: unless-stopped
+    command: ["--replSet", "rs0", "--oplogSize", "128", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─── MongoDB init (one-shot: khởi tạo replica set) ────────────────────────
+  mongodb-init:
+    image: mongo:8.0
+    container_name: greenstem-mongodb-init
+    restart: "no"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    command: >
+      mongosh --host mongodb:27017 --quiet --eval
+      "try { rs.status() } catch(e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongodb:27017'}]}) }"
+
 volumes:
   chroma_data:
+    driver: local
+  mongo_data:
+    driver: local
+  mongo_config:
     driver: local
