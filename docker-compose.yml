@@ -28,7 +28,10 @@ services:
       - CHROMA_URL=http://chromadb:8000
     depends_on:
       chromadb:
-        condition: service_healthy
+        # service_started thay vì service_healthy vì image chromadb/chroma
+        # rất minimal — không có curl/wget/python để chạy healthcheck từ trong
+        # container. App có retry logic riêng khi gọi Chroma.
+        condition: service_started
     restart: unless-stopped
 
   # ─── ChromaDB (vector store cho RAG) ──────────────────────────────────────
@@ -44,12 +47,6 @@ services:
       - IS_PERSISTENT=TRUE
       - ANONYMIZED_TELEMETRY=FALSE
       - ALLOW_RESET=TRUE
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/api/v2/heartbeat"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
     restart: unless-stopped
 
 volumes:

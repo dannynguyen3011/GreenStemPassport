@@ -8,7 +8,9 @@ WORKDIR /app
 
 # Cài dependencies trước (cache layer này khi package.json không đổi)
 COPY package.json package-lock.json* ./
-RUN npm ci
+# --legacy-peer-deps vì eslint-config-next@16 yêu cầu eslint>=9
+# nhưng project dùng eslint@^8 (Vercel build cũng làm tương tự)
+RUN npm ci --legacy-peer-deps
 
 # Source code sẽ được mount qua docker-compose volumes
 # (không COPY ở đây để tránh phải rebuild khi sửa code)

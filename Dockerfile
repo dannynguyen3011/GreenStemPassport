@@ -9,7 +9,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+# --legacy-peer-deps vì eslint-config-next@16 yêu cầu eslint>=9
+# nhưng project dùng eslint@^8 (Vercel build cũng làm tương tự)
+RUN npm ci --legacy-peer-deps
 
 # ─── Stage 2: builder ────────────────────────────────────────────────────────
 # Build Next.js → output standalone
@@ -39,10 +41,8 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
-# Copy public assets
-COPY --from=builder /app/public ./public
-
 # Copy standalone build (Next.js đã optimize, chỉ những file cần thiết)
+# Note: project này không có public/ directory nên skip COPY public assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

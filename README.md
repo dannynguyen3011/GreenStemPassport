@@ -268,7 +268,7 @@ docker compose exec app npm run rag:ingest
 
 ### Production image
 
-Multi-stage build using Next.js standalone output. Final image is ~150 MB, runs as non-root, includes a health check.
+Multi-stage build using Next.js standalone output. Final image is ~276 MB, runs as non-root.
 
 ```bash
 docker build -t greenstem .
@@ -276,6 +276,12 @@ docker run -p 3000:3000 --env-file .env.local greenstem
 ```
 
 Deploy this image to any container host — Fly.io, Render, AWS ECS, Google Cloud Run, or a plain VPS. Set the same environment variables documented below.
+
+**Troubleshooting:** If `docker build` fails with `apk add` DNS errors (`dl-cdn.alpinelinux.org: name does not exist`), it's a BuildKit network namespace issue on Docker Desktop. Rebuild with the host network:
+
+```bash
+docker build --network=host -t greenstem .
+```
 
 ### File layout
 
