@@ -58,13 +58,37 @@ export function AuthDataLoader() {
       const token = session.access_token
       const headers = { Authorization: `Bearer ${token}` }
 
-      const [profileRes, activitiesRes] = await Promise.all([
-        fetch('/api/profile', { headers }),
-        fetch('/api/activities', { headers }),
-      ])
+      let profileRes = await fetch('/api/profile', { headers })
 
-      if (!profileRes.ok) return // profile not created yet (shouldn't happen post-register)
+      // Email-confirmation flow: profile chưa được tạo lúc register vì
+      // signUp trả về session=null. Bootstrap ngay bằng user_metadata.
+      if (profileRes.status === 404) {
+        const md = session.user.user_metadata ?? {}
+        const bootstrap = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: md.display_name,
+            grade: md.grade,
+            school_name: md.school_name,
+            province: md.province,
+            target_major: md.target_major,
+          }),
+        })
+        if (!bootstrap.ok) {
+          console.error(
+            '[AuthDataLoader] profile bootstrap failed:',
+            bootstrap.status,
+            await bootstrap.text().catch(() => '')
+          )
+          return
+        }
+        profileRes = await fetch('/api/profile', { headers })
+      }
 
+      if (!profileRes.ok) return
+
+      const activitiesRes = await fetch('/api/activities', { headers })
       const profileRow = await profileRes.json()
       const activitiesRows: Record<string, unknown>[] = activitiesRes.ok
         ? await activitiesRes.json()
