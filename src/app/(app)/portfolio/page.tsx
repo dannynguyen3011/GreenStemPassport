@@ -19,7 +19,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Star, Trash2 } from 'lucide-react'
-import type { ActivityCategory } from '@/types'
+import type { ActivityCategory, Activity, TrustTier } from '@/types'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 
 const CATEGORIES: { value: ActivityCategory; label: string }[] = [
   { value: 'scholarship', label: 'Học bổng' },
@@ -76,7 +77,7 @@ function CharCount({
 }
 
 export default function PortfolioPage() {
-  const { activities, addActivity, removeActivity } = useProfileStore()
+  const { activities, addServerActivity, removeActivity } = useProfileStore()
   const [open, setOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -102,7 +103,7 @@ export default function PortfolioPage() {
 
   const unslottedActivities = activities.filter((a) => a.slot_order === null)
 
-  const onSubmit = (data: ActivityFormData) => {
+  const onSubmit = async (data: ActivityFormData) => {
     const isFull = slottedActivities.length >= 10
     const currentInSelectedSlot = slottedActivities.find((a) => a.slot_order === data.slot_order)
     const shouldReplace = Boolean(currentInSelectedSlot)
@@ -127,20 +128,60 @@ export default function PortfolioPage() {
       }
     }
 
-    addActivity({
-      title: data.title,
-      category: data.category,
-      slot_order: data.slot_order,
-      star_situation: data.star_situation,
-      star_task: data.star_task,
-      star_action: data.star_action,
-      star_result: data.star_result,
-      trust_tier: 1,
-    })
-    reset()
-    setOpen(false)
-    setSuccessMsg('Đã thêm hoạt động!')
-    setTimeout(() => setSuccessMsg(''), 3000)
+    // POST lên server trước → nhận activity với DB-backed activity_id
+    try {
+      const supabase = getSupabaseBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setSuccessMsg('Phiên đăng nhập đã hết hạn. Hãy login lại.')
+        setTimeout(() => setSuccessMsg(''), 3000)
+        return
+      }
+
+      const res = await fetch('/api/activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: data.title,
+          category: data.category,
+          slot_order: data.slot_order,
+          star_situation: data.star_situation,
+          star_task: data.star_task,
+          star_action: data.star_action,
+          star_result: data.star_result,
+        }),
+      })
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        const msg =
+          typeof body?.error === 'string'
+            ? body.error
+            : 'Không thể lưu hoạt động. Hãy thử lại.'
+        setSuccessMsg(msg)
+        setTimeout(() => setSuccessMsg(''), 3000)
+        return
+      }
+
+      const created = (await res.json()) as Activity & { trust_tier?: number }
+      // Server có thể không trả trust_tier; default về 1
+      addServerActivity({
+        ...created,
+        trust_tier: (created.trust_tier ?? 1) as TrustTier,
+      })
+
+      reset()
+      setOpen(false)
+      setSuccessMsg('Đã thêm hoạt động!')
+      setTimeout(() => setSuccessMsg(''), 3000)
+    } catch (err) {
+      console.error('[portfolio] create activity failed:', err)
+      setSuccessMsg('Network error. Hãy thử lại.')
+      setTimeout(() => setSuccessMsg(''), 3000)
+    }
   }
 
   const slotMap = new Map(slottedActivities.map((a) => [a.slot_order!, a]))

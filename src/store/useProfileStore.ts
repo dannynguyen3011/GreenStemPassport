@@ -32,6 +32,8 @@ interface ProfileStore {
       'activity_id' | 'user_id' | 'created_at' | 'tech_tags' | 'base_score' | 'trust_verified_by' | 'artifact_url'
     >
   ) => void
+  /** Add an activity that already has a server-generated ID (returned from POST /api/activities) */
+  addServerActivity: (activity: Activity) => void
   removeActivity: (id: string) => void
   updateSlotOrder: (id: string, slot: number | null) => void
 }
@@ -154,6 +156,24 @@ export const useProfileStore = create<ProfileStore>()(
           const activitiesByUserId = { ...state.activitiesByUserId, [id]: nextList }
           return {
             activitiesByUserId,
+            activities: nextList,
+          }
+        }),
+
+      addServerActivity: (activity) =>
+        set((state) => {
+          const id = state.currentUserId
+          const userActivities = state.activitiesByUserId[id] ?? []
+          // Bump any existing activity that's in the same slot (server-side already
+          // enforces uniqueness but mirror it locally so UI is consistent)
+          const bumped = userActivities.map((a) =>
+            a.slot_order !== null && a.slot_order === activity.slot_order
+              ? { ...a, slot_order: null }
+              : a
+          )
+          const nextList = [...bumped, activity]
+          return {
+            activitiesByUserId: { ...state.activitiesByUserId, [id]: nextList },
             activities: nextList,
           }
         }),

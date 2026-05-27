@@ -59,19 +59,54 @@ export default function LandingPage() {
   const router = useRouter()
 
   // Sau email confirmation, Supabase redirect về `/#access_token=...`.
-  // SDK tự parse hash + lưu session vào localStorage, mình chỉ cần
-  // detect session rồi chuyển sang /dashboard.
+  // SDK tự parse hash + lưu session vào localStorage, mình cần:
+  //   1. Detect session (mount hoặc onAuthStateChange)
+  //   2. Tạo user_profiles row nếu chưa có (signUp với email confirm thì
+  //      flow tạo profile trong register page không chạy vì data.session=null)
+  //   3. Redirect /dashboard
   useEffect(() => {
     const supabase = getSupabaseBrowser()
 
+    async function ensureProfileAndRedirect(token: string, user: { user_metadata?: Record<string, unknown> }) {
+      // Kiểm tra profile đã tồn tại chưa
+      const check = await fetch('/api/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (check.status === 404) {
+        // Chưa có → tạo bằng metadata user nhập lúc register
+        const md = user.user_metadata ?? {}
+        await fetch('/api/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            display_name: md.display_name,
+            grade: md.grade,
+            school_name: md.school_name,
+            province: md.province,
+            target_major: md.target_major,
+          }),
+        }).catch((err) => console.error('[landing] profile bootstrap failed:', err))
+      }
+
+      router.replace('/dashboard')
+    }
+
     // Check ngay khi mount — bắt trường hợp user đã login + load landing page
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace('/dashboard')
+      if (data.session) {
+        void ensureProfileAndRedirect(data.session.access_token, data.session.user)
+      }
     })
 
     // Lắng nghe event SIGNED_IN (trigger khi SDK parse hash xong)
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') router.replace('/dashboard')
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        void ensureProfileAndRedirect(session.access_token, session.user)
+      }
     })
 
     return () => sub.subscription.unsubscribe()
