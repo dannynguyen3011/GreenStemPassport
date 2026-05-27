@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Topbar } from '@/components/shared/Topbar'
 import { useProfileStore } from '@/store/useProfileStore'
 import { TrustBadge } from '@/components/shared/TrustBadge'
+import { TrustVerifyDialog } from '@/components/shared/TrustVerifyDialog'
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '@/shared/constants'
 import {
   Dialog,
@@ -17,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Star, Trash2, ShieldCheck } from 'lucide-react'
+import { Plus, Star, Trash2 } from 'lucide-react'
 import type { ActivityCategory } from '@/types'
 
 const CATEGORIES: { value: ActivityCategory; label: string }[] = [
@@ -390,10 +391,10 @@ export default function PortfolioPage() {
 
                 <div className="flex items-center justify-between">
                   <StarRating score={activity.base_score} />
-                  <button className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Xác thực
-                  </button>
+                  <TrustVerifyDialog
+                    activityId={activity.activity_id}
+                    currentTier={activity.trust_tier}
+                  />
                 </div>
               </div>
             )

@@ -1,11 +1,14 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Leaf, Compass, Shield, Trophy, MessageCircle,
   ArrowRight, CheckCircle, Zap, Globe, Heart, BookOpen,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import { getSupabaseBrowser } from '@/shared/supabase-browser'
 
 const PAIN_POINTS = [
   {
@@ -53,6 +56,27 @@ const STEPS = [
 ]
 
 export default function LandingPage() {
+  const router = useRouter()
+
+  // Sau email confirmation, Supabase redirect về `/#access_token=...`.
+  // SDK tự parse hash + lưu session vào localStorage, mình chỉ cần
+  // detect session rồi chuyển sang /dashboard.
+  useEffect(() => {
+    const supabase = getSupabaseBrowser()
+
+    // Check ngay khi mount — bắt trường hợp user đã login + load landing page
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/dashboard')
+    })
+
+    // Lắng nghe event SIGNED_IN (trigger khi SDK parse hash xong)
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') router.replace('/dashboard')
+    })
+
+    return () => sub.subscription.unsubscribe()
+  }, [router])
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white transition-colors">
 
